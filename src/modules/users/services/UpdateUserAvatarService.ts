@@ -2,7 +2,7 @@ import { injectable, inject } from 'tsyringe';
 
 import IStorageProvider from  '@shared/container/providers/StorageProvider/models/IStorageProvider';
 
-import User from '@modules/users/infra/typeorm/entities/Users';
+import User from '@modules/users/infra/typeorm/entities/User';
 import IUsersRepository from '../repositories/IUsersRepository';
 
 
