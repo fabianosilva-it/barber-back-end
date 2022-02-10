@@ -37,7 +37,7 @@ jobs:
         run: yarn build
       
       # copia os arquivos para digital ocean
-      - name: copy dist to digital ocean
+      - name: Copy dist to digital ocean
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -79,5 +79,5 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          script: pm2 restart agendador-api
+          script: ls
       
