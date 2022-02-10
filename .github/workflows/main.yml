@@ -48,8 +48,8 @@ jobs:
           source: ".,!node_modules"
           target: "~/app/barber-back-end"
       
-      # Executa yarn no digital ocean
-      - name: Install dependencies on Digital ocean
+      # Executa scripts de produção no digital ocean
+      - name: Install dependencies, migrations and restart node on Digital ocean
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
