@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.5.1
+        with:
+          node-version: 12.x
+      
+      # Cache yarn
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - uses: actions/cache@v2
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      
+      # Instalar dependencias
+      - name: Install dependencies
+        run: yarn
+      
+      # Executar Build  
+      - name: Run Build
+        run: yarn build
+      
+      # copia os arquivos para digital ocean
+      - name: Copy dist to digital ocean
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: ".,!node_modules"
+          target: "~/app/barber-back-end"
+      
+      # Executa scripts de produção no digital ocean
+      - name: Install dependencies, migrations and restart node on Digital ocean
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ~/app/barber-back-end
+            yarn
+            ./node_modules/.bin/typeorm migration:run
+            pm2 restart agendador-api
+      
+      # Executa yarn no digital ocean
+      #- name: Run migrations on Digital ocean
+      #  uses: appleboy/ssh-action@master
+      #  with:
+       #   host: ${{ secrets.SSH_HOST }}
+        #  username: ${{ secrets.SSH_USER }}
+         # key: ${{ secrets.SSH_KEY }}
+          #port: ${{ secrets.SSH_PORT }}
+          #script: |
+           # cd ~/app/barber-back-end
+           # ./node_modules/.bin/typeorm migrations:run
+            
+      
