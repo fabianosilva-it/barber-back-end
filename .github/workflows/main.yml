@@ -23,7 +23,8 @@ jobs:
       # Executar Build  
       - name: Run Build
         run: yarn build
-        
+      
+      # copia os arquivos para digital ocean
       - name: copy dist to digital ocean
         uses: appleboy/scp-action@master
         with:
@@ -33,3 +34,38 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           source: ".,!node_modules"
           target: "~/app/barber-back-end"
+      
+      # Executa yarn no digital ocean
+      - name: Install dependencies on Digital ocean
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ~/app/barber-back-end
+            yarn
+      
+      # Executa yarn no digital ocean
+      - name: Run migrations on Digital ocean
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd ~/app/barber-back-end
+            ./node_modules/.bin/typeorm migrations:run
+            
+      # Reiniciar o node 
+      - name: Restart node on Digital ocean
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: pm2 restart agendador-api
+      
