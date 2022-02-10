@@ -59,7 +59,7 @@ jobs:
           script: |
             cd ~/app/barber-back-end
             yarn
-            ./node_modules/.bin/typeorm migrations:run
+            ./node_modules/.bin/typeorm migration:run
             pm2 restart agendador-api
       
       # Executa yarn no digital ocean
